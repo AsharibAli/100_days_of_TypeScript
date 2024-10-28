@@ -9,8 +9,9 @@ class Product {
   name: string;
   price: number;
 
-  constructor(id: number, name: string, price: number) {
-    // Constructor parameter type annotations
+// Constructor parameter type annotations
+constructor(id: number, name: string, price: number) {
+    
     this.id = id;
     this.name = name;
     this.price = price;
@@ -78,7 +79,9 @@ class MyClassPrivate {
 }
 
 const instancePrivate = new MyClassPrivate("My secret");
-// console.log(instance.secret); // This would result in an error because secret is private
+
+// console.log(instancePrivate.secret); // This would result in an error because the property 'secret' is private
+
 instancePrivate.revealSecret(); // This is a valid way to access the private property
 ```
 
@@ -105,7 +108,14 @@ const parent = new Parent("Smith");
 const child = new Child("Johnson");
 
 // console.log(parent.familyName); // This would result in an error because familyName is protected
-child.introduceFamily(); // This is a valid way to access the protected property
+parent.introduceFamily(); // This is a valid way to access the protected property
+
+//similarly,
+
+// console.log(child.familyName); // This would result in an error because familyName is protected
+chi.introduceFamily(); // This is a valid way to access the protected property
+
+
 
 ```
 
@@ -150,8 +160,11 @@ class ProductExAccessors {
   
   console.log(productEx.getProductInfo()); // Default price: ID: 1, Name: Widget, Price: $0
   
-  // Use the 'setter' to update the price
-  productEx.price = 20.0;
+  // Use the 'getter' to update the price
+console.log(productEx.price);
+
+// Use the 'setter' to update the price
+productEx.price=20;
   
   console.log(productEx.getProductInfo()); // Updated price: ID: 1, Name: Widget, Price: $20
   
@@ -195,6 +208,9 @@ class ProductStaticMembers {
   
   console.log(product1static.getProductInfo()); // ID: 1, Name: Widget
   console.log(product2static.getProductInfo()); // ID: 2, Name: Gadget
+
+//console.log(product1static.generateNextId()); This will give an error during compile time
+//console.log(product2static.generateNextId());  This will also give an error during compile time because of the same reason
 ```
 
 In this example:
@@ -203,6 +219,7 @@ In this example:
 - The `generateNextId` static method allows us to obtain the next ID in a controlled manner and increments `nextId` for the next call.
 - When creating instances of the `ProductStaticMembers` class, we use the static method `ProductStaticMembers.generateNextId()` to generate unique IDs for each product.
 - Each product instance retains its unique ID and other properties.
+- Note that the instances (product1static & product2static) can not used directly with the "static method", namely `generateNextId()`, in the code above.
 
 ---
 
@@ -211,14 +228,14 @@ In this example:
 the class ensures that it provides the properties and methods required by that interface. It helps enforce a consistent structure for objects created from that class.
 
 ```tsx
-class ProductImplementInterface {
+class Product {
     // 'private' property
     private static nextId: number = 1;
   
     constructor(private id: number, private name: string) {}
   
     static generateNextId(): number {
-      return ProductImplementInterface.nextId++;
+      return Product.nextId++;
     }
   
     getProductInfo(): string {
@@ -227,18 +244,18 @@ class ProductImplementInterface {
   }
   
   // Generate unique IDs for products using the static method
-  const product1implement = new ProductImplementInterface(ProductImplementInterface.generateNextId(), "Widget");
-  const product2implement = new ProductImplementInterface(ProductImplementInterface.generateNextId(), "Gadget");
+  const product1 = new Product(Product.generateNextId(), "Widget");
+  const product2 = new Product(Product.generateNextId(), "Gadget");
   
-  console.log(product1implement.getProductInfo()); // ID: 1, Name: Widget
-  console.log(product2implement.getProductInfo()); // ID: 2, Name: Gadget
+  console.log(product1.getProductInfo()); // ID: 1, Name: Widget
+  console.log(product2.getProductInfo()); // ID: 2, Name: Gadget
 ```
 
 In this example:
 
-- We have an interface `ProductImplementInterface` that defines the structure of a product with properties `id` and `name`, as well as a method `getProductInfo`.
-- The `Product` class implements the `ProductImplementInterface` interface using the `implements` keyword. It provides the required properties (`id` and `name`) and the method `getProductInfo`.
-- Instances of the `Product` class, `product1` and `product2`, are created and assigned to variables of type `ProductImplementInterface` . This demonstrates that the class conforms to the interface.
+- We have an interface defined by our class, namely `Product` that defines the structure of a product with properties `id` and `name`, a static method `generateNextId` as well as a method `getProductInfo`.
+- The `Product` class implements the interface for the new instances of the same class i.e. the class structure itself acts as a blueprint for the instances created (product1 & product2). 
+- Instances of the `Product` class, `product1` and `product2`, are created of type of our class `Product` . This demonstrates that the instantiated classes i.e. `product1` and `product2` conforms to the interface of our class `Product`.
 
 ---
 
@@ -256,7 +273,7 @@ abstract class AbstractItem {
     return AbstractItem.nextId++;
   }
 
-  abstract getItemInfo(): string;
+  
 }
 
 class Item extends AbstractItem {
@@ -269,8 +286,11 @@ class Item extends AbstractItem {
   }
 }
 
-const item1: AbstractItem = new Item(AbstractItem.generateNextId(), "Widget");
-const item2: AbstractItem = new Item(AbstractItem.generateNextId(), "Gadget");
+const item1= new Item(Item.generateNextId(), "Widget"); //Valid way to create instances of our abstract class `AbstractItem`
+const item2= new Item(Item.generateNextId(), "Gadget"); //Valid way to create instances of our abstract class `AbstractItem`
+
+/* const item1= new AbstractItem(Item.generateNextId(), "Widget"); This will result in an error because the abstract class namely `AbstractItem` can not be used as a blueprint to create instances */
+//const item1= new AbstractItem(Item.generateNextId(), "Widget");This will also result in an error for the same reason
 
 console.log(item1.getItemInfo()); // ID: 1, Name: Widget
 console.log(item2.getItemInfo()); // ID: 2, Name: Gadget
@@ -278,14 +298,15 @@ console.log(item2.getItemInfo()); // ID: 2, Name: Gadget
 
 Here's a shorter explanation of the code:
 
-1. `AbstractItem` is an abstract class serving as a blueprint for items. It includes:
+1. `AbstractItem` is an abstract class which includes:
     - A private static property, `nextId`, for generating unique IDs.
     - A constructor initializing `id` and `name`.
     - A static method, `generateNextId()`, for obtaining the next ID.
-    - An abstract method, `getItemInfo()`, that must be implemented by subclasses.
-2. `Item` is a concrete class extending `AbstractItem`. It provides a concrete implementation of `getItemInfo()`.
-3. Two `Item` instances, `item1` and `item2`, are created with unique IDs and names.
+    - An abstract method, `getItemInfo()`, that must be adopted by subclasses/derived classes (Note: do not confuse subclass with an instance of the class)
+2. `Item` is a concrete subclass extending from `AbstractItem`. It provides a concrete implementation of `getItemInfo()`.
+3. Two `Item` instances, `item1` and `item2`, are created by using the subclass `Item`, as a blueprint, with unique IDs and names.
 4. The `getItemInfo()` method of each item is called, displaying their information.
+5. The constructor can not be called in a subclass without the super call.
 
 ---
 
@@ -325,8 +346,8 @@ class AnotherEntity extends AbstractEntity {
 }
 
 // Generate unique IDs for entities using the static method
-const entity1: AbstractEntity = new Entity(AbstractEntity.generateNextId(), "Widget");
-const entity2: AbstractEntity = new AnotherEntity(AbstractEntity.generateNextId(), "Gadget");
+const entity1 = new Entity(AbstractEntity.generateNextId(), "Widget");
+const entity2 = new AnotherEntity(AbstractEntity.generateNextId(), "Gadget");
 
 // Polymorphism: Call 'getEntityInfo' method on different concrete subclasses
 console.log(entity1.getEntityInfo()); // ID: 1, Name: Widget
@@ -340,11 +361,11 @@ In this example:
     - Features a private static property **`nextId`** to generate unique entity IDs.
     - The constructor now uses **`protected`** instead of **`private`** for the **`name`** property to allow access in derived classes.
 2. **Concrete Subclasses (`Entity` and `AnotherEntity`)**:
-    - Two concrete subclasses extend **`AbstractEntity`**: **`Entity`** and **`AnotherEntity`**.
+    - Two concrete subclasses extend from **`AbstractEntity`**, i.e., **`Entity`** and **`AnotherEntity`**.
     - Each class has its constructor, passing **`id`** and **`name`** to the parent class's constructor via **`super(id, name)`**.
     - They override the **`getEntityInfo`** method to provide custom entity information.
 3. **Usage of Subclasses**:
-    - Instances of **`Entity`** and **`AnotherEntity** are created and stored in variables of the abstract class type (**`AbstractEntity`**).
+    - Instances of **`Entity`** and **`AnotherEntity**, i.e., entity1 & entity2 respectively, are created
     - The **`generateNextId`** method from the abstract class generates unique IDs.
     - Polymorphism is demonstrated as the overridden **`getEntityInfo`** methods are called on these instances, even though they have an abstract class type.
 4. **Console Output**:
